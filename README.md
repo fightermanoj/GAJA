@@ -67,6 +67,7 @@ GAJA enables autonomous UAV patrols by integrating:
 
 ## 6. Project Structure
 
+```
 GAJA/
 ├── Hardware/
 │ ├── esp32_camera_multiclient/
@@ -100,7 +101,7 @@ GAJA/
 │ │ └── view.jpg
 │ └── depth_estimation/
 └── README.md
-
+```
 
 
 ## 7. Development Phases
