@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Analysis System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+        .button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+        .file-input-container {
+            margin-bottom: 15px;
+        }
+        .file-input-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .coordinates-display {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            overflow: hidden;
+        }
+        .coordinates-marker {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+        #loading {
+            display: none;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .image-box {
+            width: 48%;
+            margin-bottom: 15px;
+        }
+        .image-box img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border: 1px solid #ddd;
+        }
+        .confidence-display {
+            margin-top: 10px;
+            height: 20px;
+            background-color: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .confidence-bar {
+            height: 100%;
+            background-color: #4CAF50;
+            border-radius: 10px;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Location Analysis System</h1>
+
+        <div class="section">
+            <h2>Upload Files for Analysis</h2>
+            <form id="uploadForm">
+                <div class="file-input-container">
+                    <label for="video">Upload Drone Video:</label>
+                    <input type="file" id="video" name="video" accept="video/*" required>
+                </div>
+                
+                <div class="file-input-container">
+                    <label for="image">Upload Satellite/Aerial Image:</label>
+                    <input type="file" id="image" name="image" accept="image/*" required>
+                </div>
+                
+                <button type="submit" class="button">Analyze Location</button>
+            </form>
+            <div id="loading">Processing... This may take a moment.</div>
+            <div id="error" class="error"></div>
+        </div>
+
+        <div class="section" id="resultsSection" style="display: none;">
+            <h2>Analysis Results</h2>
+            
+            <div class="image-container">
+                <div class="image-box">
+                    <h3>Drone Video Frame</h3>
+                    <img id="videoFrame" src="" alt="Video Frame">
+                </div>
+                <div class="image-box">
+                    <h3>Satellite Image</h3>
+                    <div class="coordinates-display">
+                        <img id="satelliteImage" src="" alt="Satellite Image" style="width: 100%; height: auto;">
+                        <div class="coordinates-marker" id="marker"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <h3>Confidence Score: <span id="confidenceScore">0</span>/10</h3>
+                <div class="confidence-display">
+                    <div class="confidence-bar" id="confidenceBar" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <h3>Location Description</h3>
+                <pre id="locationDescription" style="white-space: pre-wrap; font-family: inherit;"></pre>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <h3>Coordinates</h3>
+                <p id="coordinates"></p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Previous Analyses</h2>
+            <button id="loadPrevious" class="button">Load Previous Analyses</button>
+            <div id="previousAnalyses" style="margin-top: 20px; max-height: 400px; overflow-y: auto;">
+                <table id="analysesTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Date/Time</th>
+                            <th>Coordinates</th>
+                            <th>Confidence Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analysesTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadForm = document.getElementById('uploadForm');
+            const loadPreviousBtn = document.getElementById('loadPrevious');
+            const marker = document.getElementById('marker');
+            
+            // Upload form submission
+            uploadForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData();
+                const videoFile = document.getElementById('video').files[0];
+                const imageFile = document.getElementById('image').files[0];
+                
+                if (!videoFile || !imageFile) {
+                    document.getElementById('error').textContent = 'Both video and image files are required';
+                    return;
+                }
+                
+                formData.append('video', videoFile);
+                formData.append('image', imageFile);
+                
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('error').textContent = '';
+                
+                fetch('/upload_location_data', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('loading').style.display = 'none';
+                    displayResults(data);
+                })
+                .catch(error => {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('error').textContent = 'Error: ' + error.message;
+                    console.error('Error:', error);
+                });
+            });
+            
+            // Load previous analyses
+            loadPreviousBtn.addEventListener('click', function() {
+                fetch('/get_all_locations')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('analysesTableBody');
+                    tableBody.innerHTML = '';
+                    
+                    if (data.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="3">No previous analyses found</td></tr>';
+                    } else {
+                        data.forEach(entry => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${entry.Timestamp}</td>
+                                <td>${entry.Coordinates}</td>
+                                <td>${entry.Confidence_Score} / 10</td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+                    }
+                    
+                    document.getElementById('analysesTable').style.display = 'table';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+            
+            // Check for latest data on page load
+            fetch('/get_location_data')
+            .then(response => response.json())
+            .then(data => {
+                if (data.message !== "No location data available") {
+                    displayResults(data);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+            
+            // Display results function
+            function displayResults(data) {
+                if (data.error) {
+                    document.getElementById('error').textContent = data.error;
+                    return;
+                }
+                
+                // Show results section
+                document.getElementById('resultsSection').style.display = 'block';
+                
+                // Set images
+                document.getElementById('videoFrame').src = `/static/uploads/${data.video_frame}`;
+                document.getElementById('satelliteImage').src = `/static/uploads/${data.satellite_image}`;
+                
+                // Set coordinates marker
+                const coordinates = data.coordinates.split(',');
+                const x = parseFloat(coordinates[0]);
+                const y = parseFloat(coordinates[1]);
+                
+                marker.style.left = `${x}%`;
+                marker.style.top = `${y}%`;
+                
+                // Set confidence score
+                const confidence = parseInt(data.confidence);
+                document.getElementById('confidenceScore').textContent = confidence;
+                document.getElementById('confidenceBar').style.width = `${confidence * 10}%`;
+                
+                // Set location description
+                document.getElementById('locationDescription').textContent = data.description;
+                
+                // Set coordinates text
+                document.getElementById('coordinates').textContent = `X: ${x}%, Y: ${y}%`;
+            }
+        });
+    </script>
+</body>
+</html>

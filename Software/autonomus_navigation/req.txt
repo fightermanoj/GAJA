@@ -1,0 +1,19 @@
+# Core libraries
+Flask
+Flask-CORS
+python-dotenv
+numpy
+opencv-python
+pandas
+google-generativeai
+Werkzeug
+
+# Optional, but often useful with Flask/web apps
+gunicorn # For production WSGI server (if deploying beyond development)
+requests # If your Flask app needs to make outbound HTTP requests
+Pillow # Often a dependency for image processing or if pandas uses it indirectly
+
+# For environment management (recommended)
+# pip install virtualenv
+# virtualenv venv
+# source venv/bin/activate (Linux/macOS) or venv\Scripts\activate (Windows)
