@@ -150,22 +150,5 @@ GAJA/
 - Arduino IDE
 - Raspberry Pi 5 + sensors
 
-### Installation
 
-
-git clone https://github.com/your-username/GAJA.git
-cd GAJA
-Hardware
-Setup ESP32 using esp32_camera_multiclient/
-
-Connect and configure 24GHz radar via human_radar/
-
-Software
-
-12. Usage
-Power up and deploy drone with AI attachment
-
-Run backend and open the dashboard (http://localhost:3000)
-
-Monitor 3D maps, alerts, and patrol status
 
