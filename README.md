@@ -1,11 +1,12 @@
 # Team SEA-KERS Submission Hack Vortex
 
-- Video link : 
-- PPT Link :
+- Video link : [Link](https://drive.google.com/drive/folders/1CENlOQuaCHMdvnFzSqihzYrNOYIm1gW_?usp=drive_link)
+- PPT Link : [Link](https://drive.google.com/drive/folders/1CENlOQuaCHMdvnFzSqihzYrNOYIm1gW_?usp=drive_link)
 
 
 # GAJA: AI-Powered Autonomous UAVs for Enhanced Border Security
 ![GAJA Project DEMO](https://drive.google.com/uc?export=view&id=1tqBEIKV9O0bEftjSX_e4UdFclymeUuAY "GAJA Project File Structure Overview")
+
 
 ## Table of Contents
 
